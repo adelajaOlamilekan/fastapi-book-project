@@ -1,0 +1,30 @@
+name: Pull Request
+
+on:
+    pull_request:
+        branches:
+            - main
+jobs:
+    test:
+        name: test
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                python-version: [3.9]
+        
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                python-version: ${{matrix.python-version}}
+            - name: Install Dependencies
+              run: |
+                python -m venv venv
+                source ./venv/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+            - name: Run Tests
+              run: |
+               pytest
