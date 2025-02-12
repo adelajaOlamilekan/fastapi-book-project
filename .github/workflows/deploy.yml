@@ -23,14 +23,14 @@ jobs:
               
             -   name: Deploy to EC2
                 run: |
-                 ssh ubuntu@${{secrets.EC2_HOST}} << 'EOF'
-                    set -e #Exit immediately on error
+                 ssh -o StrictHostKeyChecking=no ubuntu@${{secrets.EC2_HOST}} << 'EOF'
+                    set -e # Exit immediately on error
 
                     # Define working directory
-                    APP_DIR = "/home/ubuntu/app"
+                    APP_DIR="/home/ubuntu/app"
 
-                    #clone repo if not exists, else pull latest changes
-                    if [! -d "APP_DIR/.git"]; then
+                    # Clone repo if not exists, else pull latest changes
+                    if [ ! -d "$APP_DIR/.git" ]; then
                       git clone https://github.com/adelajaOlamilekan/fastapi-book-project.git $APP_DIR
                     fi
                     cd $APP_DIR
@@ -41,7 +41,7 @@ jobs:
                     docker rm fastapi-book-app || true
 
                     # Build and run the new container
-                    docker build -t fastapi-book-app
+                    docker build -t fastapi-book-app .
                     docker run -d -p 8000:8000 --name fastapi-book-app fastapi-book-app
 
                     # Restart nginx to apply any config changes
