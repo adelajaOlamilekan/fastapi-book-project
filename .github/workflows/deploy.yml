@@ -11,41 +11,36 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            # - name: Check out code
-            #   uses: actions/checkout@v4
-
-            -  name: Setup SSH Key
-               run: |
+            - name: Setup SSH Key
+              run: |
                 mkdir -p ~/.ssh
-                echo "${{secrets.EC2_SSH_PRIVATE_KEY}}" > ~/.ssh/id_rsa
+                printf "%s" "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
                 chmod 600 ~/.ssh/id_rsa
-                ssh-keyscan -H ${{secrets.EC2_HOST}} >> ~/.ssh/known_hosts
-              
-            -   name: Deploy to EC2
-                run: |
-                 ssh ubuntu@${{secrets.EC2_HOST}} << 'EOF'
-                    set -e #Exit immediately on error
+                ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-                    # Define working directory
-                    APP_DIR = "/home/ubuntu/app"
+            - name: Deploy to EC2
+              run: |
+                ssh ubuntu@${{ secrets.EC2_HOST }} <<- 'EOF'
+                  set -e  # Exit immediately on error
 
-                    #clone repo if not exists, else pull latest changes
-                    if [! -d $"APP_DIR/.git"]; then
-                      git clone https://github.com/adelajaOlamilekan/fastapi-book-project.git $APP_DIR
-                    fi
-                    cd $APP_DIR
-                    git pull origin main
+                  # Define working directory
+                  APP_DIR="/home/ubuntu/app"
 
-                    # Stop and remove old container (if running)
-                    docker stop fastapi-book-app || true
-                    docker rm fastapi-book-app || true
+                  # Clone repo if not exists, else pull latest changes
+                  if [ ! -d "${APP_DIR}/.git" ]; then
+                    git clone https://github.com/adelajaOlamilekan/fastapi-book-project.git $APP_DIR
+                  fi
+                  cd $APP_DIR
+                  git pull origin main
 
-                    # Build and run the new container
-                    docker build -t fastapi-book-app .
-                    docker run -d -p 8000:8000 --name fastapi-book-app fastapi-book-app
+                  # Stop and remove old container (if running)
+                  docker stop fastapi-book-app || true
+                  docker rm fastapi-book-app || true
 
-                    # Restart nginx to apply any config changes
-                    sudo systemctl restart nginx
-                  EOF
+                  # Build and run the new container
+                  docker build -t fastapi-book-app .
+                  docker run -d -p 8000:8000 --name fastapi-book-app fastapi-book-app
 
-
+                  # Restart nginx to apply any config changes
+                  sudo systemctl restart nginx
+                EOF
