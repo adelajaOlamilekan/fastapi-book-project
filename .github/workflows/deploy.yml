@@ -17,6 +17,23 @@ jobs:
                 echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
                 chmod 600 ~/.ssh/id_rsa
                 ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+            
+            - name: Install Docker on EC2
+              run: |
+                ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+                  set -e  # Exit immediately on error
+      
+                  # Update package list
+                  sudo apt update
+      
+                  # Install Docker if it's not installed
+                  if ! command -v docker &> /dev/null; then
+                    sudo apt install -y docker.io
+                    sudo systemctl start docker
+                    sudo systemctl enable docker
+                    sudo usermod -aG docker ubuntu
+                  fi
+                EOF
 
             - name: Deploy to EC2
               run: |
