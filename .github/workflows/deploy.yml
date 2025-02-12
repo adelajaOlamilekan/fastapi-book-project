@@ -23,14 +23,14 @@ jobs:
               
             -   name: Deploy to EC2
                 run: |
-                 ssh -o StrictHostKeyChecking=no ubuntu@${{secrets.EC2_HOST}} << 'EOF'
-                    set -e # Exit immediately on error
+                 ssh ubuntu@${{secrets.EC2_HOST}} << 'EOF'
+                    set -e #Exit immediately on error
 
                     # Define working directory
-                    APP_DIR="/home/ubuntu/app"
+                    APP_DIR = "/home/ubuntu/app"
 
-                    # Clone repo if not exists, else pull latest changes
-                    if [ ! -d "$APP_DIR/.git" ]; then
+                    #clone repo if not exists, else pull latest changes
+                    if [! -d $"APP_DIR/.git"]; then
                       git clone https://github.com/adelajaOlamilekan/fastapi-book-project.git $APP_DIR
                     fi
                     cd $APP_DIR
